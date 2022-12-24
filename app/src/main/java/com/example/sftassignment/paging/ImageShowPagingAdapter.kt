@@ -13,7 +13,10 @@ import com.example.sftassignment.data.model.ImageItem
 import com.example.sftassignment.data.model.ImageItem.Companion.DEFAULT_DESC
 import com.example.sftassignment.databinding.RecViewItemImagesBinding
 
-class ImageShowPagingAdapter(private val context:Context) : PagingDataAdapter<
+class ImageShowPagingAdapter(
+    private val context:Context,
+    private val mInterface:OnRecItemClickListener
+    ) : PagingDataAdapter<
         ImageItem,
         ImageShowPagingAdapter.ImageShowViewHolder
         >(COMPARATOR) {
@@ -21,7 +24,11 @@ class ImageShowPagingAdapter(private val context:Context) : PagingDataAdapter<
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageShowViewHolder {
         val inflater = LayoutInflater.from(context)
         val view = RecViewItemImagesBinding.inflate(inflater, parent, false)
-        return ImageShowViewHolder(view)
+        val viewHolder = ImageShowViewHolder(view)
+        viewHolder.itemView.setOnClickListener {
+            mInterface.onRecItemClicked(getItem(viewHolder.absoluteAdapterPosition))
+        }
+        return viewHolder
     }
 
     override fun onBindViewHolder(holder: ImageShowViewHolder, position: Int) {
@@ -50,5 +57,8 @@ class ImageShowPagingAdapter(private val context:Context) : PagingDataAdapter<
                 return oldItem == newItem
             }
         }
+    }
+    interface OnRecItemClickListener{
+        fun onRecItemClicked(data:ImageItem?)
     }
 }

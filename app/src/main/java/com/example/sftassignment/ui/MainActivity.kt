@@ -10,9 +10,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.sftassignment.data.model.ImageItem
 import com.example.sftassignment.paging.ImageShowPagingAdapter
 import com.example.sftassignment.databinding.ActivityMainBinding
 import com.example.sftassignment.paging.PagingLoadingAdapter
+import com.example.sftassignment.utils.ShowDetailsDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -21,7 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(),ImageShowPagingAdapter.OnRecItemClickListener {
 
     private lateinit var binding:ActivityMainBinding
     private val viewModel:HomeViewModel by viewModels()
@@ -35,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         binding.recViewImages.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL,false)
-            mAdapter = ImageShowPagingAdapter(this@MainActivity)
+            mAdapter = ImageShowPagingAdapter(this@MainActivity,this@MainActivity)
             /*
             * setting recycler view adapter and also adding loading state adapter
             * for showing loading when page is getting loaded.
@@ -82,6 +84,15 @@ class MainActivity : AppCompatActivity() {
                     binding.swipeRefresh.isRefreshing=false
                 }
             }
+        }
+    }
+
+    override fun onRecItemClicked(data: ImageItem?) {
+        data?.let {
+            val dialog = ShowDetailsDialog(this,it) { dialog ->
+                dialog.dismiss()
+            }
+            dialog.show()
         }
     }
 }

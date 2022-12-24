@@ -1,12 +1,10 @@
-package com.example.sftassignment.ui
+package com.example.sftassignment.ui.main_screen
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,17 +14,15 @@ import com.example.sftassignment.databinding.ActivityMainBinding
 import com.example.sftassignment.paging.PagingLoadingAdapter
 import com.example.sftassignment.utils.ShowDetailsDialog
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(),ImageShowPagingAdapter.OnRecItemClickListener {
 
     private lateinit var binding:ActivityMainBinding
-    private val viewModel:HomeViewModel by viewModels()
+    private val viewModel: MainViewModel by viewModels()
     private var mAdapter: ImageShowPagingAdapter?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,6 +30,12 @@ class MainActivity : AppCompatActivity(),ImageShowPagingAdapter.OnRecItemClickLi
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        initFields()
+
+        initObservers()
+    }
+
+    private fun initFields() {
         binding.recViewImages.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL,false)
@@ -70,9 +72,11 @@ class MainActivity : AppCompatActivity(),ImageShowPagingAdapter.OnRecItemClickLi
                 mAdapter
             }
         }
+    }
 
+    private fun initObservers() {
 
-        viewModel._topMovieListData.observe(this@MainActivity){
+        viewModel._imageListData.observe(this@MainActivity){
             mAdapter?.submitData(lifecycle,it).also {
                 //binding.progressBar.visibility = View.GONE
                 lifecycleScope.launch {
@@ -85,9 +89,13 @@ class MainActivity : AppCompatActivity(),ImageShowPagingAdapter.OnRecItemClickLi
                 }
             }
         }
+
     }
 
     override fun onRecItemClicked(data: ImageItem?) {
+        /*
+        * Show the details dialog when item is clicked inside recycler view.
+        * */
         data?.let {
             val dialog = ShowDetailsDialog(this,it) { dialog ->
                 dialog.dismiss()

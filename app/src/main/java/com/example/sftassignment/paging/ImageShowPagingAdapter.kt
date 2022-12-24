@@ -1,4 +1,4 @@
-package com.example.sftassignment
+package com.example.sftassignment.paging
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -8,7 +8,9 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.example.sftassignment.R
 import com.example.sftassignment.data.model.ImageItem
+import com.example.sftassignment.data.model.ImageItem.Companion.DEFAULT_DESC
 import com.example.sftassignment.databinding.RecViewItemImagesBinding
 
 class ImageShowPagingAdapter(private val context:Context) : PagingDataAdapter<
@@ -32,6 +34,9 @@ class ImageShowPagingAdapter(private val context:Context) : PagingDataAdapter<
                     .error(R.drawable.all_type_content_default)
             )
             .into(holder.binding.ivImage)
+
+        holder.binding.tvTitle.text = item?.author ?: ""
+        holder.binding.tvDesc.text = item?.description ?: DEFAULT_DESC
     }
 
     inner class ImageShowViewHolder(val binding: RecViewItemImagesBinding) : RecyclerView.ViewHolder(binding.root)

@@ -2,28 +2,29 @@ package com.example.sftassignment.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.util.Log
+import android.view.View
 import androidx.activity.viewModels
-import androidx.core.splashscreen.SplashScreen
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.sftassignment.ImageShowPagingAdapter
-import com.example.sftassignment.R
+import com.example.sftassignment.paging.ImageShowPagingAdapter
 import com.example.sftassignment.databinding.ActivityMainBinding
+import com.example.sftassignment.paging.PagingLoadingAdapter
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlin.concurrent.timer
+import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding:ActivityMainBinding
-    private lateinit var viewModel:HomeViewModel
+    private val viewModel:HomeViewModel by viewModels()
     private var mAdapter: ImageShowPagingAdapter?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,20 +32,56 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        viewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
-
         binding.recViewImages.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL,false)
             mAdapter = ImageShowPagingAdapter(this@MainActivity)
-            adapter = mAdapter
+            /*
+            * setting recycler view adapter and also adding loading state adapter
+            * for showing loading when page is getting loaded.
+            * */
+            adapter = mAdapter?.withLoadStateHeaderAndFooter(
+                header = PagingLoadingAdapter(),
+                footer = PagingLoadingAdapter()
+            )
         }
 
         lifecycleScope.launch {
-            viewModel._topMovieListData.observe(this@MainActivity){
-                mAdapter?.submitData(lifecycle,it)
+            /*
+            * This is for showing the initial loader when the page is opened first time
+            * and the first page is loading.
+            * */
+            mAdapter?.loadStateFlow?.collectLatest {
+                if (it.prepend is LoadState.NotLoading && it.prepend.endOfPaginationReached) {
+                    binding.progressBar.visibility = View.GONE
+                }
+                if (it.append is LoadState.NotLoading && it.append.endOfPaginationReached) {
+                    binding.progressBar.isVisible = mAdapter?.itemCount!! < 1
+                }
             }
         }
 
+        binding.swipeRefresh.apply {
+            setOnRefreshListener {
+                //Do something
+                mAdapter?.refresh()
+                mAdapter
+            }
+        }
+
+
+        viewModel._topMovieListData.observe(this@MainActivity){
+            mAdapter?.submitData(lifecycle,it).also {
+                //binding.progressBar.visibility = View.GONE
+                lifecycleScope.launch {
+                    /*
+                    * The refresh happens too quick due to paging 3.
+                    * So giving a artificial delay of 2sec.
+                    * */
+                    delay(2000)
+                    binding.swipeRefresh.isRefreshing=false
+                }
+            }
+        }
     }
 }

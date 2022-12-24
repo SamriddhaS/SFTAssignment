@@ -10,7 +10,6 @@ class ImagePagingSource(private val api:ApiService): PagingSource<Int, ImageItem
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ImageItem> {
         try {
-            Log.d("ImagePagingSource","Load is Called")
             val position = params.key ?: 1
             val previousKey = if (position == 1) null else position - 1
             /*
@@ -21,7 +20,6 @@ class ImagePagingSource(private val api:ApiService): PagingSource<Int, ImageItem
             val response = api.getImageList(position)
             if (!response.isSuccessful) return LoadResult.Error(Exception("Api Error : ${response.message()}"))
             if (response.body().isNullOrEmpty()) return LoadResult.Error(Exception("No Image Found"))
-            Log.d("ImagePagingSource",response.body().toString())
             return LoadResult.Page(
                 data = response.body()!!,
                 prevKey = previousKey,

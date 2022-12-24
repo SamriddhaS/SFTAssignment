@@ -33,6 +33,8 @@ class ImageShowPagingAdapter(
 
     override fun onBindViewHolder(holder: ImageShowViewHolder, position: Int) {
         val item = getItem(position)
+
+
         Glide.with(context)
             .load(item?.download_url)
             .apply(

@@ -12,7 +12,7 @@
 9. Use MVVM Architecture [done]
 
 
-## Tech stack & Open-source libraries
+## Tech stack used for the app
 - Minimum SDK level 21
 - [Kotlin](https://kotlinlang.org/) 
 - [Kotlin Coroutines](https://github.com/Kotlin/kotlinx.coroutines) 

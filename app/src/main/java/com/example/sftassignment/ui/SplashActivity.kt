@@ -20,7 +20,7 @@ class SplashActivity : AppCompatActivity() {
             /*
             * Showing the splash screen for 5sec
             * */
-            delay(5000)
+            delay(1000)
             startActivity(Intent(this@SplashActivity,MainActivity::class.java))
             finishAffinity()
         }

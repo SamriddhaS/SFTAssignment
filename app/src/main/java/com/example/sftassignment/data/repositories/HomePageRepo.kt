@@ -1,8 +1,13 @@
 package com.example.sftassignment.data.repositories
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.RemoteMediator
+import androidx.paging.liveData
 import com.example.sftassignment.data.model.ImageItem
 import com.example.sftassignment.data.model.ImageListResponse
 import com.example.sftassignment.data.network.ApiService
+import com.example.sftassignment.paging.ImagePagingSource
 import com.example.sftassignment.utils.Resource
 import java.lang.Exception
 import javax.inject.Inject
@@ -13,18 +18,9 @@ constructor(
     private val apiService: ApiService
 )
 {
-    suspend fun getImageList()
-            : Resource<ArrayList<ImageItem>> {
-        val response = try{
-            val response = apiService.getTopRatedMovieList(1)
-            if (response.code()!=200) return Resource.Error(message = "Api error")
-            val result = response.body() ?: return Resource.Error(message = "Api error")
-            if (result.isNullOrEmpty()) return Resource.Error(message = "No Movies Found")
-            result
-        }catch (e: Exception){
-            return Resource.Error(message = e.message.toString())
-        }
-        return Resource.Success(response)
-    }
+    fun getImages() = Pager(
+        config = PagingConfig(pageSize = 20, maxSize = 100),
+        pagingSourceFactory = { ImagePagingSource(apiService) }
+    ).liveData
 
 }

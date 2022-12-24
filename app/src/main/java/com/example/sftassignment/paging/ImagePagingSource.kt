@@ -1,33 +1,42 @@
 package com.example.sftassignment.paging
 
+import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.sftassignment.data.model.ImageItem
-import com.example.sftassignment.data.model.ImageListResponse
 import com.example.sftassignment.data.network.ApiService
 
-class ImagePagingSource(private val api:ApiService): PagingSource<Int, ImageListResponse>(){
-    override fun getRefreshKey(state: PagingState<Int, ImageListResponse>): Int? {
+class ImagePagingSource(private val api:ApiService): PagingSource<Int, ImageItem>(){
 
-    }
-
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ImageListResponse> {
-        /*return try {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ImageItem> {
+        try {
+            Log.d("ImagePagingSource","Load is Called")
             val position = params.key ?: 1
+            val previousKey = if (position == 1) null else position - 1
+            /*
+             * We don't have the total page key in this api response.
+             * So restricting the call after page 10 statically.
+             * */
+            val nextKey = if (position == 10) null else position + 1
             val response = api.getImageList(position)
-
+            if (!response.isSuccessful) return LoadResult.Error(Exception("Api Error : ${response.message()}"))
+            if (response.body().isNullOrEmpty()) return LoadResult.Error(Exception("No Image Found"))
+            Log.d("ImagePagingSource",response.body().toString())
             return LoadResult.Page(
-                data = response,
-                prevKey = if (position == 1) null else position - 1,
-                *//*
-                * We don't have the total page key in this api response.
-                * So restricting the call after page 10 statically.
-                * *//*
-                nextKey = if (position == 10) null else position + 1
+                data = response.body()!!,
+                prevKey = previousKey,
+                nextKey = nextKey
             )
         } catch (e: Exception) {
-            LoadResult.Error(e)
-        }*/
+            return LoadResult.Error(e)
+        }
+    }
+
+    override fun getRefreshKey(state: PagingState<Int, ImageItem>): Int? {
+        return state.anchorPosition?.let { anchorPosition ->
+            val anchorPage = state.closestPageToPosition(anchorPosition)
+            anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
+        }
     }
 
 }

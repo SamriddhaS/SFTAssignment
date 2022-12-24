@@ -9,11 +9,10 @@ interface ApiService {
         const val BASE_URL = "https://picsum.photos/v2/"
     }
 
-    @FormUrlEncoded
-    @POST("top_rated")
+    @GET("list")
     suspend fun getImageList(
         @Query("page") pageNo:Int,
         @Query("limit") limit: Int=20
-    ):ImageListResponse
+    ):Response<ImageListResponse>
 
 }
